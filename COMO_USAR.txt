@@ -1,0 +1,33 @@
+GUIA TAXI - COMO USAR
+
+1. Para usar com banco de dados e receber autorizacoes em tempo real, abra o arquivo INICIAR_APP.bat.
+2. No computador, acesse http://localhost:3000.
+3. No celular, use o endereco IP do computador na mesma rede Wi-Fi, por exemplo http://192.168.0.10:3000.
+4. Para solicitar, o supervisor precisa entrar com nome e senha.
+5. A senha padrao dos supervisores autorizados ja cadastrados e 1234.
+6. Depois do login, preencha a solicitacao com empresa, colaborador, data e motivo. Origem e destino agora sao opcionais.
+7. O campo Motivo e livre para o supervisor digitar.
+8. Clique em "Salvar e imprimir via do gestor".
+9. A primeira via abre para o supervisor imprimir ou salvar. Essa via fica com o gestor/supervisor.
+10. A via do taxista chega em tempo real na area do taxista.
+11. A area do taxista tem senha separada. Senha padrao do taxista: taxi123.
+12. Depois de entrar na area do taxista, preencha Valor, Km Saida e Km Chegada na autorizacao recebida.
+13. Na area do taxista, escolha uma autorizacao e clique em "Imprimir minha via" ou "PDF taxista".
+14. Na area do taxista, tambem e possivel cadastrar novos supervisores e definir a senha deles.
+15. A tela Informações tem senha separada. Senha padrão: info123.
+16. Em Informações, escolha o mês, confira a planilha, use os filtros em cada coluna e ajuste o Valor por KM.
+17. Clique em "Gerar PDF das viagens" para gerar o PDF do mês selecionado. Se houver filtros aplicados, o PDF sai somente com as viagens filtradas.
+18. O valor da viagem é calculado por: Km Chegada - Km Saída x Valor por KM. O padrão é 1,50.
+19. Em Informações também é possível trocar a senha do taxista, a senha das informações e a senha de cada supervisor.
+20. A aba Supervisores também tem senha. Senha padrão: super123.
+21. Dentro da aba Supervisores é possível trocar a senha da própria aba e redefinir a senha de cada supervisor.
+22. No Android/Chrome, abra o menu do navegador e toque em "Adicionar a tela inicial" para usar como app.
+
+MODO SIMPLES SEM BANCO
+1. Tambem e possivel abrir o arquivo index.html direto no navegador.
+2. Para solicitar, o supervisor precisa entrar com nome e senha.
+3. Nesse modo simples, os dados ficam salvos somente no aparelho que esta usando.
+
+Observacao:
+O banco de dados fica no arquivo data/db.json enquanto o servidor estiver rodando no computador.
+Para hospedar no Firebase com acesso em tempo real fora da rede da empresa, o proximo passo e trocar este banco local por Firebase Firestore ou Realtime Database.

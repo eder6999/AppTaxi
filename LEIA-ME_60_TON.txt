@@ -1,0 +1,19 @@
+ARQUIVOS PARA AS CARGAS DE 60 TONELADAS
+
+1. Copie os dois arquivos .scs para a pasta mod do jogo.
+2. Desative ou remova o BauGUERRAv3.2 original.
+3. Ative somente BauGUERRAv3.2_60ton_MJCUSTOM_v2.scs.
+4. Coloque company_med_equip_electronics_v2.scs acima do mapa na prioridade.
+5. Coloque o Bau Guerra de 60 toneladas acima de outros mods de carga/trailer.
+
+ORDEM RECOMENDADA (de cima para baixo):
+
+BauGUERRAv3.2_60ton_MJCUSTOM_v2.scs
+company_med_equip_electronics_v2.scs
+mod do mapa
+
+IMPORTANTE:
+
+As ofertas já existentes podem continuar mostrando 27 t porque foram salvas na
+economia do perfil. Durma/avance o tempo algumas vezes ou faça uma redefinição da
+economia para o jogo gerar novas ofertas com o peso atualizado.

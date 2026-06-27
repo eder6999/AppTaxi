@@ -1,0 +1,39 @@
+{
+  "requests": [],
+  "supervisors": [
+    { "id": "authorized-1", "name": "Newton Medeiros", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-2", "name": "Marcos Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-3", "name": "Flavio Portes", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-4", "name": "Vinicius Bezerra", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-5", "name": "Valdir Pozza", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-6", "name": "Cleison Ribeiro", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-7", "name": "Cleverson Gritti", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-8", "name": "Gerson Scarpari", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-9", "name": "Erasmo Aquino", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-10", "name": "Marciel Balduino", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-11", "name": "Valmir Ferreira", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-12", "name": "Gustavo Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-13", "name": "Alexandro Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-14", "name": "Rodrigo Cruz", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-15", "name": "Patrick Bonfim", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-16", "name": "Jarbas Sousa", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-17", "name": "Fernanda Kubiaki", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-18", "name": "Graciel Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-19", "name": "Rubiana Lima", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-20", "name": "Emanuele Sobral", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-21", "name": "Nicole Violatti", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-22", "name": "Angélica Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-23", "name": "Ricardo Barros", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-24", "name": "Marilza Andrade", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-25", "name": "Antonio Filho", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-26", "name": "Maria Silva", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-27", "name": "Mauro Pelinson", "department": "LEVO Alimentos", "phone": "-", "password": "1234" },
+    { "id": "authorized-28", "name": "Otoniel Scotti", "department": "LEVO Alimentos", "phone": "-", "password": "1234" }
+  ],
+  "settings": {
+    "taxiPassword": "taxi123",
+    "infoPassword": "info123",
+    "supervisorsPassword": "super123",
+    "kmRate": "1,50"
+  }
+}

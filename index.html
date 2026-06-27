@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guia Taxi | Solicitações</title>
+    <meta name="theme-color" content="#1f2933" />
+    <link rel="manifest" href="manifest.json?v=20260623-1" />
+    <link rel="apple-touch-icon" href="app-icon-512.png?v=20260623-1" />
+    <link rel="stylesheet" href="styles.css?v=20260626-4" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-labelledby="app-title">
+        <div class="hero__content">
+          <p class="eyebrow">Transporte corporativo</p>
+          <h1 id="app-title">Guia Taxi</h1>
+          <p class="hero__copy">
+            Solicite corridas para colaboradores, acompanhe pedidos do dia e gere a guia em PDF para autorização.
+          </p>
+          <div class="hero__actions">
+            <a href="#solicitacao" class="button button--primary">Nova solicitação</a>
+            <a href="#acesso" class="button button--ghost">Área restrita</a>
+            <button class="button button--ghost" id="install-app" type="button" hidden>Instalar app</button>
+          </div>
+        </div>
+        <div class="hero__panel" aria-label="Resumo das solicitações">
+          <div>
+            <span class="metric" id="metric-total">0</span>
+            <span class="metric-label">solicitações</span>
+          </div>
+          <div>
+            <span class="metric" id="metric-today">0</span>
+            <span class="metric-label">hoje</span>
+          </div>
+          <div>
+            <span class="metric" id="metric-pending">0</span>
+            <span class="metric-label">pendentes</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="sidebar" aria-label="Navegação">
+          <div class="brand-mark">GT</div>
+          <nav>
+            <a href="#solicitacao">Solicitação</a>
+            <a href="#acesso">Área restrita</a>
+            <a href="#supervisores" data-protected-nav="supervisores" hidden>Supervisores</a>
+            <a href="#taxista" data-protected-nav="taxista" hidden>Taxista</a>
+            <a href="#empresa" data-protected-nav="empresa" hidden>Empresa</a>
+            <a href="#informacoes" data-protected-nav="informacoes" hidden>Informações</a>
+            <a href="#historico" data-protected-nav="historico" hidden>Histórico</a>
+          </nav>
+        </aside>
+
+        <div class="content">
+          <section class="section screen is-active" id="solicitacao" aria-labelledby="form-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Login do supervisor</p>
+                <h2 id="form-title">Nova solicitação</h2>
+              </div>
+              <span class="status-pill">Guia PDF automática</span>
+            </div>
+
+            <form id="login-form" class="request-form login-form">
+              <label>
+                Supervisor
+                <select name="loginSupervisor" id="login-supervisor" required>
+                  <option value="">Selecione o supervisor</option>
+                </select>
+              </label>
+              <label>
+                Senha
+                <input name="password" type="password" required placeholder="Senha do supervisor" />
+              </label>
+              <div class="form-actions span-2">
+                <button class="button button--primary" type="submit">Entrar como supervisor</button>
+              </div>
+            </form>
+
+            <div class="login-status" id="login-status"></div>
+
+            <form id="request-form" class="request-form">
+              <label class="span-2">
+                Empresa
+                <input name="company" required placeholder="Nome da empresa" />
+              </label>
+
+              <label>
+                Supervisor solicitante
+                <select name="supervisor" id="supervisor-select" required>
+                  <option value="">Selecione o supervisor</option>
+                </select>
+              </label>
+
+              <label>
+                Setor
+                <input name="department" required placeholder="Ex.: Produção, RH, Logística" />
+              </label>
+
+              <label>
+                Colaborador / passageiro
+                <input name="passenger" required placeholder="Nome do passageiro" />
+              </label>
+
+              <label>
+                Matrícula
+                <input name="employeeId" placeholder="Opcional" />
+              </label>
+
+              <label>
+                Data
+                <input name="date" type="date" required />
+              </label>
+
+              <label>
+                Horário
+                <input name="time" type="time" required />
+              </label>
+
+              <label class="span-2">
+                Origem
+                <input name="origin" placeholder="Endereço de saída" />
+              </label>
+
+              <label class="span-2">
+                Destino
+                <input name="destination" placeholder="Endereço de chegada" />
+              </label>
+
+              <label>
+                Motivo
+                <input name="reason" required placeholder="Digite o motivo da solicitação" />
+              </label>
+
+              <label>
+                Centro de custo
+                <input name="costCenter" placeholder="Opcional" />
+              </label>
+
+              <label class="span-2">
+                Observações
+                <textarea name="notes" rows="3" placeholder="Detalhes importantes para a corrida"></textarea>
+              </label>
+
+              <div class="form-actions span-2">
+                <button class="button button--primary" type="submit">Salvar solicitação</button>
+                <button class="button button--secondary" type="reset">Limpar</button>
+              </div>
+            </form>
+
+            <div class="copy-box" id="requester-copy-box">
+              <div class="copy-box__header">
+                <div>
+                  <h3>Via do gestor</h3>
+                  <p>Essa parte fica com o supervisor que solicitou.</p>
+                </div>
+              </div>
+              <div class="authorization-preview" id="requester-copy-preview"></div>
+            </div>
+
+            <div class="supervisor-requests" id="supervisor-requests" hidden>
+              <div class="supervisor-requests__header">
+                <div>
+                  <p class="eyebrow">Acesso do supervisor</p>
+                  <h3>Minhas solicitações</h3>
+                  <p>Imprima, salve em PDF ou compartilhe suas guias quando precisar.</p>
+                </div>
+              </div>
+              <div class="supervisor-request-list" id="supervisor-request-list"></div>
+            </div>
+          </section>
+
+          <section class="section screen" id="acesso" aria-labelledby="access-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Acesso protegido</p>
+                <h2 id="access-title">Escolha sua área</h2>
+              </div>
+              <span class="status-pill">Senha obrigatória</span>
+            </div>
+            <div class="access-grid">
+              <a class="access-option" href="#taxista">
+                <span class="access-option__icon">TX</span>
+                <strong>Taxista</strong>
+                <small>Autorizações, valores e quilometragem</small>
+              </a>
+              <a class="access-option" href="#informacoes">
+                <span class="access-option__icon">IN</span>
+                <strong>Informações</strong>
+                <small>Planilha mensal, relatórios e histórico</small>
+              </a>
+              <a class="access-option" href="#supervisores">
+                <span class="access-option__icon">SP</span>
+                <strong>Supervisores</strong>
+                <small>Cadastros e redefinição de senhas</small>
+              </a>
+              <a class="access-option" href="#empresa">
+                <span class="access-option__icon">EP</span>
+                <strong>Empresa</strong>
+                <small>Consulta para conferência e prestação de contas</small>
+              </a>
+            </div>
+          </section>
+
+          <section class="section screen" id="supervisores" aria-labelledby="supervisors-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Área dos supervisores</p>
+                <h2 id="supervisors-title">Cadastro e pedidos</h2>
+              </div>
+              <button class="button button--secondary" id="export-last" type="button">Gerar última guia</button>
+            </div>
+            <form id="supervisors-login-form" class="request-form login-form">
+              <label>
+                Senha da aba Supervisores
+                <input name="supervisorsPassword" type="password" required placeholder="Senha da aba Supervisores" />
+              </label>
+              <div class="form-actions">
+                <button class="button button--primary" type="submit">Entrar em Supervisores</button>
+              </div>
+            </form>
+            <div class="login-status" id="supervisors-login-status"></div>
+
+            <div class="supervisors-area">
+              <div class="settings-panel">
+                <div>
+                  <h3>Redefinir senhas</h3>
+                  <p>Troque a senha desta aba ou redefina a senha de acesso de um supervisor.</p>
+                </div>
+                <form id="supervisors-area-password-form" class="request-form compact-form">
+                  <label>
+                    Nova senha da aba Supervisores
+                    <input name="supervisorsPassword" type="password" required placeholder="Nova senha da aba" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--secondary" type="submit">Salvar senha da aba</button>
+                  </div>
+                </form>
+                <form id="supervisors-reset-password-form" class="request-form compact-form">
+                  <label>
+                    Supervisor
+                    <select name="supervisorId" id="supervisors-reset-select" required></select>
+                  </label>
+                  <label>
+                    Nova senha
+                    <input name="password" type="password" required placeholder="Nova senha do supervisor" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--secondary" type="submit">Redefinir senha</button>
+                  </div>
+                </form>
+              </div>
+
+              <form id="supervisor-form" class="request-form compact-form">
+                <label>
+                  Nome do supervisor
+                  <input name="name" required placeholder="Nome completo" />
+                </label>
+                <label>
+                  Setor
+                  <input name="department" required placeholder="Setor do supervisor" />
+                </label>
+                <label>
+                  Telefone
+                  <input name="phone" placeholder="Opcional" />
+                </label>
+                <label>
+                  Senha
+                  <input name="password" type="password" required placeholder="Senha de acesso" />
+                </label>
+                <div class="form-actions">
+                  <button class="button button--primary" type="submit">Adicionar supervisor</button>
+                </div>
+              </form>
+              <div class="supervisor-list" id="supervisor-list"></div>
+              <div class="supervisor-grid" id="supervisor-grid"></div>
+            </div>
+          </section>
+
+          <section class="section screen" id="taxista" aria-labelledby="driver-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Login do taxista</p>
+                <h2 id="driver-title">Autorizações para imprimir</h2>
+              </div>
+              <button class="button button--secondary" id="print-last" type="button">Imprimir última autorização</button>
+            </div>
+            <form id="taxi-login-form" class="request-form login-form">
+              <label>
+                Senha do taxista
+                <input name="taxiPassword" type="password" required placeholder="Senha da área do taxista" />
+              </label>
+              <div class="form-actions">
+                <button class="button button--primary" type="submit">Entrar na área do taxista</button>
+              </div>
+            </form>
+            <div class="login-status" id="taxi-login-status"></div>
+            <div class="driver-area">
+              <div class="mobile-tip">
+                No celular, use PDF como caminho principal. Depois você pode compartilhar, salvar ou imprimir pelo próprio aparelho.
+              </div>
+              <div class="authorization-preview" id="authorization-preview"></div>
+              <div class="driver-supervisors">
+                <h3>Supervisores autorizados</h3>
+                <p>Cadastre aqui quem pode solicitar taxi pela empresa.</p>
+                <form id="driver-supervisor-form" class="request-form compact-form">
+                  <label>
+                    Nome do supervisor
+                    <input name="name" required placeholder="Nome completo" />
+                  </label>
+                  <label>
+                    Setor
+                    <input name="department" required placeholder="Setor do supervisor" />
+                  </label>
+                  <label>
+                    Telefone
+                    <input name="phone" placeholder="Opcional" />
+                  </label>
+                  <label>
+                    Senha
+                    <input name="password" type="password" required placeholder="Senha de acesso" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--primary" type="submit">Adicionar supervisor</button>
+                  </div>
+                </form>
+              </div>
+              <div class="driver-list" id="driver-list"></div>
+            </div>
+          </section>
+
+          <section class="section screen" id="informacoes" aria-labelledby="info-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Planilha mensal</p>
+                <h2 id="info-title">Informações das viagens</h2>
+              </div>
+              <span class="status-pill">Área com senha</span>
+            </div>
+
+            <form id="info-login-form" class="request-form login-form">
+              <label>
+                Senha das informações
+                <input name="infoPassword" type="password" required placeholder="Senha da planilha" />
+              </label>
+              <div class="form-actions">
+                <button class="button button--primary" type="submit">Entrar nas informações</button>
+              </div>
+            </form>
+            <div class="login-status" id="info-login-status"></div>
+
+            <div class="info-area">
+              <div class="info-controls">
+                <label>
+                  Mês para prestar conta
+                  <input id="info-month" type="month" />
+                </label>
+                <label>
+                  Valor por KM
+                  <input id="km-rate" inputmode="decimal" placeholder="1,50" />
+                </label>
+                <button class="button button--primary" id="save-rate" type="button">Salvar valor/KM</button>
+                <button class="button button--secondary" id="export-info-pdf" type="button">Gerar PDF das viagens</button>
+              </div>
+
+              <div class="settings-panel">
+                <div>
+                  <h3>Trocar senhas</h3>
+                  <p>Altere aqui as senhas do taxista, das informações e de qualquer supervisor.</p>
+                </div>
+                <form id="password-settings-form" class="request-form compact-form">
+                  <label>
+                    Nova senha do taxista
+                    <input name="taxiPassword" type="password" placeholder="Deixe vazio para manter" />
+                  </label>
+                  <label>
+                    Nova senha das informações
+                    <input name="infoPassword" type="password" placeholder="Deixe vazio para manter" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--secondary" type="submit">Salvar senhas</button>
+                  </div>
+                </form>
+                <form id="supervisor-password-form" class="request-form compact-form">
+                  <label>
+                    Supervisor
+                    <select name="supervisorId" id="password-supervisor-select" required></select>
+                  </label>
+                  <label>
+                    Nova senha
+                    <input name="password" type="password" required placeholder="Nova senha do supervisor" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--secondary" type="submit">Trocar senha</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="info-summary">
+                <strong id="info-total">Total do mês: R$ 0,00</strong>
+                <button class="table-action" id="toggle-info-total" type="button">Ocultar total</button>
+                <span id="info-count">0 viagens encontradas</span>
+              </div>
+
+              <div class="table-wrap info-table-wrap">
+                <table class="info-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Hora</th>
+                      <th>Guia</th>
+                      <th>Matrícula</th>
+                      <th>Colaborador</th>
+                      <th>Descrição da viagem</th>
+                      <th>Km saída</th>
+                      <th>Km chegada</th>
+                      <th>Valor da viagem</th>
+                      <th>Solicitante</th>
+                      <th>Status</th>
+                    </tr>
+                    <tr class="filter-row">
+                      <th><input data-info-filter="date" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="time" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="guideNumber" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="employeeId" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="passenger" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="description" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="kmStart" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="kmEnd" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="fare" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="supervisor" placeholder="Filtrar" /></th>
+                      <th><input data-info-filter="status" placeholder="Filtrar" /></th>
+                    </tr>
+                  </thead>
+                  <tbody id="info-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+          <section class="section screen" id="empresa" aria-labelledby="company-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Área da empresa</p>
+                <h2 id="company-title">Consulta de autorizações</h2>
+              </div>
+              <span class="status-pill">Somente com senha</span>
+            </div>
+
+            <form id="company-login-form" class="request-form login-form">
+              <label>
+                Senha da empresa
+                <input name="companyPassword" type="password" required placeholder="Senha da área da empresa" />
+              </label>
+              <div class="form-actions">
+                <button class="button button--primary" type="submit">Entrar na Empresa</button>
+              </div>
+            </form>
+            <div class="login-status" id="company-login-status"></div>
+
+            <div class="company-area">
+              <div class="info-controls">
+                <label>
+                  Mês para consulta
+                  <input id="company-month" type="month" />
+                </label>
+                <button class="button button--secondary" id="export-company-pdf" type="button">Gerar PDF da empresa</button>
+              </div>
+
+              <div class="company-requests">
+                <div class="supervisor-requests__header">
+                  <div>
+                    <p class="eyebrow">Tempo real</p>
+                    <h3>Pedidos dos supervisores</h3>
+                    <p>Acompanhe as solicitações recebidas e gere a via do gestor quando precisar.</p>
+                  </div>
+                </div>
+                <div class="supervisor-request-list" id="company-request-list"></div>
+              </div>
+
+              <div class="settings-panel">
+                <div>
+                  <h3>Redefinir senhas</h3>
+                  <p>Troque as senhas principais e a senha dos supervisores quando precisar.</p>
+                </div>
+                <form id="company-password-settings-form" class="request-form compact-form">
+                  <label>
+                    Nova senha da empresa
+                    <input name="companyPassword" type="password" placeholder="Deixe vazio para manter" />
+                  </label>
+                  <label>
+                    Nova senha da aba Supervisores
+                    <input name="supervisorsPassword" type="password" placeholder="Deixe vazio para manter" />
+                  </label>
+                  <div class="form-actions span-2">
+                    <button class="button button--secondary" type="submit">Salvar senhas</button>
+                  </div>
+                </form>
+                <form id="company-supervisor-password-form" class="request-form compact-form">
+                  <label>
+                    Supervisor
+                    <select name="supervisorId" id="company-password-supervisor-select" required></select>
+                  </label>
+                  <label>
+                    Nova senha
+                    <input name="password" type="password" required placeholder="Nova senha do supervisor" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="button button--secondary" type="submit">Trocar senha</button>
+                  </div>
+                </form>
+              </div>
+
+              <form id="company-supervisor-form" class="request-form compact-form">
+                <label>
+                  Nome do supervisor
+                  <input name="name" required placeholder="Nome completo" />
+                </label>
+                <label>
+                  Setor
+                  <input name="department" required placeholder="Setor do supervisor" />
+                </label>
+                <label>
+                  Telefone
+                  <input name="phone" placeholder="Opcional" />
+                </label>
+                <label>
+                  Senha
+                  <input name="password" type="password" required placeholder="Senha de acesso" />
+                </label>
+                <div class="form-actions">
+                  <button class="button button--primary" type="submit">Adicionar supervisor</button>
+                </div>
+              </form>
+
+              <div class="info-summary">
+                <strong id="company-total">Total do mês: R$ 0,00</strong>
+                <span id="company-count">0 viagens encontradas</span>
+              </div>
+
+              <div class="table-wrap company-table-wrap">
+                <table class="company-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Hora</th>
+                      <th>Guia</th>
+                      <th>Colaborador</th>
+                      <th>Matrícula</th>
+                      <th>Descrição da viagem</th>
+                      <th>Origem</th>
+                      <th>Destino</th>
+                      <th>Valor</th>
+                      <th>Solicitante</th>
+                      <th>Status</th>
+                    </tr>
+                    <tr class="filter-row">
+                      <th><input data-company-filter="date" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="time" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="guideNumber" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="passenger" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="employeeId" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="description" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="origin" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="destination" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="fare" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="supervisor" placeholder="Filtrar" /></th>
+                      <th><input data-company-filter="status" placeholder="Filtrar" /></th>
+                    </tr>
+                  </thead>
+                  <tbody id="company-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="section screen" id="historico" aria-labelledby="history-title">
+            <div class="section__header">
+              <div>
+                <p class="eyebrow">Controle</p>
+                <h2 id="history-title">Histórico de guias</h2>
+              </div>
+              <button class="button button--danger" id="clear-history" type="button">Apagar histórico</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Guia</th>
+                    <th>Data</th>
+                    <th>Passageiro</th>
+                    <th>Origem</th>
+                    <th>Destino</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Navegação principal no celular">
+      <a href="#solicitacao">Solicitar</a>
+      <a href="#acesso">Acesso</a>
+      <a href="#taxista" data-protected-nav="taxista" hidden>Taxista</a>
+      <a href="#informacoes" data-protected-nav="informacoes" hidden>Info</a>
+      <a href="#empresa" data-protected-nav="empresa" hidden>Empresa</a>
+      <a href="#supervisores" data-protected-nav="supervisores" hidden>Supervisores</a>
+      <a href="#historico" data-protected-nav="historico" hidden>Histórico</a>
+    </nav>
+
+    <div class="app-notification" id="app-notification" role="status" aria-live="polite">
+      <strong id="notification-title">Nova solicitação</strong>
+      <span id="notification-message">Uma nova autorização chegou para o taxista.</span>
+      <button id="notification-close" type="button" aria-label="Fechar notificação">×</button>
+    </div>
+    <div class="sync-status" id="sync-status" role="status" aria-live="polite">Firebase: conectando...</div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js?v=20260626-4"></script>
+  </body>
+</html>
