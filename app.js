@@ -26,12 +26,14 @@ const FIREBASE_CONFIG = {
   appId: "1:909725658582:web:089e5fb55d591112d00877"
 };
 const FIREBASE_STATE_PATH = ["apps", "guiaTaxi"];
+const PDF_LIBRARY_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
 let firebaseDb = null;
 let firebaseAuth = null;
 let firebaseInitPromise = null;
 let isApplyingRemoteState = false;
 let realtimeUnsubscribe = null;
 let realtimeRetryTimer = null;
+let pdfLibraryPromise = null;
 
 const form = document.querySelector("#request-form");
 const loginForm = document.querySelector("#login-form");
@@ -1111,7 +1113,7 @@ function renderCompanyTable() {
               <td>${html(row.destination)}</td>
               <td><strong>${html(row.fare)}</strong></td>
               <td>${html(row.supervisor)}</td>
-              <td>${html(row.status)}</td>
+              <td>${getStatusBadge(row.status)}</td>
             </tr>
           `,
         )
@@ -1141,7 +1143,7 @@ function renderCompanyRequests(requests) {
               <div class="form-actions">
                 <button class="button button--secondary" type="button" data-print="${item.id}" data-copy="requester">Imprimir via gestor</button>
                 <button class="button button--secondary" type="button" data-pdf="${item.id}" data-copy="requester">PDF via gestor</button>
-                <button class="button button--primary" type="button" data-company-share-request="${item.id}">Compartilhar guia</button>
+                <button class="button button--primary" type="button" data-company-share-request="${item.id}">Compartilhar PDF</button>
               </div>
             </article>
           `,
@@ -1213,7 +1215,7 @@ function render() {
               <div class="form-actions">
                 <button class="button button--secondary" type="button" data-print="${item.id}" data-copy="requester">Imprimir</button>
                 <button class="button button--secondary" type="button" data-pdf="${item.id}" data-copy="requester">PDF</button>
-                <button class="button button--primary" type="button" data-share-request="${item.id}">Compartilhar guia</button>
+                <button class="button button--primary" type="button" data-share-request="${item.id}">Compartilhar PDF</button>
                 <button class="button button--secondary" type="button" data-later-request="${item.id}">Deixar para depois</button>
                 ${
                   isCancelled(item) || isCompleted(item)
@@ -1257,6 +1259,7 @@ function render() {
               <div class="form-actions">
                 <button class="button button--secondary" type="button" data-print="${item.id}" data-copy="driver">Imprimir minha via</button>
                 <button class="button button--secondary" type="button" data-pdf="${item.id}" data-copy="driver">PDF taxista</button>
+                <button class="button button--primary" type="button" data-share-driver-request="${item.id}">Compartilhar PDF</button>
                 ${
                   isCancelled(item)
                     ? ""
@@ -1323,71 +1326,8 @@ function collectFormData() {
   };
 }
 
-function downloadGuide(request, mode = "both") {
-  printAuthorization(request, mode);
-  showToast("Use a opção Salvar como PDF na tela de impressão.");
-}
-
-function getShareText(request) {
-  return [
-    `AUTORIZAÇÃO DE TÁXI - ${request.guideNumber}`,
-    `Empresa: ${request.company || "-"}`,
-    `Solicitante: ${request.supervisor || "-"}`,
-    `Colaborador: ${request.passenger || "-"}`,
-    `Matrícula: ${request.employeeId || "-"}`,
-    `Data e hora: ${formatDate(request.date)} às ${request.time || "-"}`,
-    `Origem: ${request.origin || "-"}`,
-    `Destino: ${request.destination || "-"}`,
-    `Motivo: ${request.reason || "-"}`,
-    `Centro de custo: ${request.costCenter || "-"}`,
-    `Observações: ${request.notes || "-"}`,
-  ].join("\n");
-}
-
-async function copyShareText(text) {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.setAttribute("readonly", "");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand("copy");
-  textArea.remove();
-}
-
-async function shareRequest(request) {
-  const text = getShareText(request);
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: `Guia ${request.guideNumber}`, text });
-      return;
-    } catch (error) {
-      if (error?.name === "AbortError") return;
-    }
-  }
-
-  try {
-    await copyShareText(text);
-    showToast("Guia copiada. Agora cole no WhatsApp, e-mail ou outro aplicativo.");
-  } catch {
-    showToast("Não foi possível abrir o compartilhamento neste navegador.");
-  }
-}
-
-function printAuthorization(request, mode = "both") {
-  const printWindow = window.open("", "_blank", "width=900,height=900");
-  if (!printWindow) {
-    showToast("O navegador bloqueou a janela de impressão.");
-    return;
-  }
-
-  const printStyles = `
+function getPrintStyles() {
+  return `
     * { box-sizing: border-box; }
     @page { margin: 10mm; size: A4 portrait; }
     body { margin: 0; color: #000; background: #fff; font-family: Arial, Helvetica, sans-serif; }
@@ -1416,6 +1356,107 @@ function printAuthorization(request, mode = "both") {
     .city-date { display: flex; align-items: end; gap: 5mm; }
     .cut-line { height: 0; border-top: 1.5px dashed #000; margin: 0; }
   `;
+}
+
+function downloadBlob(blob, fileName) {
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function loadPdfLibrary() {
+  if (window.html2pdf) return Promise.resolve();
+  if (pdfLibraryPromise) return pdfLibraryPromise;
+
+  pdfLibraryPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = PDF_LIBRARY_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("pdf-library"));
+    document.head.appendChild(script);
+  });
+
+  return pdfLibraryPromise;
+}
+
+async function createGuidePdfFile(request, mode = "both") {
+  await loadPdfLibrary();
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "pdf-render-root";
+  wrapper.style.position = "fixed";
+  wrapper.style.left = "-10000px";
+  wrapper.style.top = "0";
+  wrapper.style.width = "190mm";
+  wrapper.style.background = "#ffffff";
+  wrapper.innerHTML = `<style>${getPrintStyles()}</style>${authorizationHtml(request, mode)}`;
+  document.body.appendChild(wrapper);
+
+  try {
+    const blob = await window
+      .html2pdf()
+      .set({
+        margin: 0,
+        filename: `${request.guideNumber}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      })
+      .from(wrapper)
+      .outputPdf("blob");
+
+    return new File([blob], `${request.guideNumber}.pdf`, { type: "application/pdf" });
+  } finally {
+    wrapper.remove();
+  }
+}
+
+function downloadGuide(request, mode = "both") {
+  printAuthorization(request, mode);
+  showToast("Use a opção Salvar como PDF na tela de impressão.");
+}
+
+async function shareRequestPdf(request, mode = "requester") {
+  if (!request) return;
+
+  try {
+    showToast("Gerando PDF para compartilhar...");
+    const file = await createGuidePdfFile(request, mode);
+    const shareData = {
+      title: `Guia ${request.guideNumber}`,
+      text: `Autorização de táxi ${request.guideNumber}`,
+      files: [file],
+    };
+
+    if (navigator.canShare?.(shareData) && navigator.share) {
+      await navigator.share(shareData);
+      showToast("PDF pronto para compartilhamento.");
+      return;
+    }
+
+    downloadBlob(file, file.name);
+    showToast("PDF baixado. Agora envie pelo WhatsApp, e-mail ou outro aplicativo.");
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+    printAuthorization(request, mode);
+    showToast("Não foi possível compartilhar direto. Use Salvar como PDF na tela de impressão.");
+  }
+}
+
+function printAuthorization(request, mode = "both") {
+  const printWindow = window.open("", "_blank", "width=900,height=900");
+  if (!printWindow) {
+    showToast("O navegador bloqueou a janela de impressão.");
+    return;
+  }
+
+  const printStyles = getPrintStyles();
 
   printWindow.document.write(`
     <!doctype html>
@@ -1924,6 +1965,7 @@ document.addEventListener("click", (event) => {
   const removeDriverButton = event.target.closest("[data-remove-driver]");
   const shareRequestButton = event.target.closest("[data-share-request]");
   const companyShareRequestButton = event.target.closest("[data-company-share-request]");
+  const driverShareRequestButton = event.target.closest("[data-share-driver-request]");
   const laterRequestButton = event.target.closest("[data-later-request]");
   const removeRequesterButton = event.target.closest("[data-remove-requester]");
   const cancelSupervisorButton = event.target.closest("[data-cancel-supervisor]");
@@ -2015,7 +2057,18 @@ document.addEventListener("click", (event) => {
     }
 
     const request = getRequests().find((item) => item.id === companyShareRequestButton.dataset.companyShareRequest);
-    if (request) shareRequest(request);
+    if (request) shareRequestPdf(request, "requester");
+    return;
+  }
+
+  if (driverShareRequestButton) {
+    if (!isTaxiLoggedIn()) {
+      showToast("Entre na área do taxista para compartilhar o PDF.");
+      return;
+    }
+
+    const request = getRequests().find((item) => item.id === driverShareRequestButton.dataset.shareDriverRequest);
+    if (request) shareRequestPdf(request, "driver");
     return;
   }
 
@@ -2060,7 +2113,7 @@ document.addEventListener("click", (event) => {
     }
 
     if (shareRequestButton) {
-      shareRequest(request);
+      shareRequestPdf(request, "requester");
       return;
     }
 
