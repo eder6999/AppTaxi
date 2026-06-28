@@ -1388,32 +1388,39 @@ function loadPdfLibrary() {
 async function createGuidePdfFile(request, mode = "both") {
   await loadPdfLibrary();
 
+  const styleElement = document.createElement("style");
+  styleElement.textContent = getPrintStyles();
   const wrapper = document.createElement("div");
   wrapper.className = "pdf-render-root";
-  wrapper.style.position = "fixed";
-  wrapper.style.left = "-10000px";
+  wrapper.style.position = "absolute";
+  wrapper.style.left = "0";
   wrapper.style.top = "0";
   wrapper.style.width = "190mm";
   wrapper.style.background = "#ffffff";
-  wrapper.innerHTML = `<style>${getPrintStyles()}</style>${authorizationHtml(request, mode)}`;
+  wrapper.style.pointerEvents = "none";
+  wrapper.style.zIndex = "-1";
+  wrapper.innerHTML = authorizationHtml(request, mode);
+  document.head.appendChild(styleElement);
   document.body.appendChild(wrapper);
 
   try {
+    const sheet = wrapper.querySelector(".levo-sheet") || wrapper;
     const blob = await window
       .html2pdf()
       .set({
         margin: 0,
         filename: `${request.guideNumber}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       })
-      .from(wrapper)
+      .from(sheet)
       .outputPdf("blob");
 
     return new File([blob], `${request.guideNumber}.pdf`, { type: "application/pdf" });
   } finally {
     wrapper.remove();
+    styleElement.remove();
   }
 }
 
