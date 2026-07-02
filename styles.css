@@ -599,7 +599,80 @@ textarea {
 }
 
 .info-table {
-  min-width: 1120px;
+  table-layout: fixed;
+  width: 1420px;
+  min-width: 1420px;
+  font-size: 0.84rem;
+}
+
+.info-table th:nth-child(1),
+.info-table td:nth-child(1) {
+  width: 92px;
+  min-width: 92px;
+}
+
+.info-table th:nth-child(2),
+.info-table td:nth-child(2) {
+  width: 72px;
+  min-width: 72px;
+}
+
+.info-table th:nth-child(3),
+.info-table td:nth-child(3) {
+  width: 118px;
+  min-width: 118px;
+}
+
+.info-table th:nth-child(4),
+.info-table td:nth-child(4) {
+  width: 110px;
+  min-width: 110px;
+}
+
+.info-table th:nth-child(5),
+.info-table td:nth-child(5) {
+  width: 150px;
+  min-width: 150px;
+}
+
+.info-table th:nth-child(6),
+.info-table td:nth-child(6),
+.info-table th:nth-child(7),
+.info-table td:nth-child(7) {
+  width: 190px;
+  min-width: 190px;
+}
+
+.info-table th:nth-child(8),
+.info-table td:nth-child(8),
+.info-table th:nth-child(9),
+.info-table td:nth-child(9) {
+  width: 92px;
+  min-width: 92px;
+}
+
+.info-table th:nth-child(10),
+.info-table td:nth-child(10) {
+  width: 118px;
+  min-width: 118px;
+}
+
+.info-table th:nth-child(11),
+.info-table td:nth-child(11) {
+  width: 142px;
+  min-width: 142px;
+}
+
+.info-table th:nth-child(12),
+.info-table td:nth-child(12) {
+  width: 120px;
+  min-width: 120px;
+}
+
+.info-table th,
+.info-table td {
+  padding: 12px 10px;
+  overflow-wrap: anywhere;
 }
 
 .company-table {

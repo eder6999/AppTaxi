@@ -998,6 +998,7 @@ function getFilteredInfoRows() {
       employeeId: request.employeeId || "-",
       passenger: request.passenger || "-",
       description: isCancelled(request) ? `${getTripDescription(request)} | ${cancellationText(request)}` : getTripDescription(request),
+      driverDescription: request.driverDescription || "-",
       kmStart: request.kmStart || "",
       kmEnd: request.kmEnd || "",
       rate: formatBrazilMoney(calculated.rate),
@@ -1024,7 +1025,9 @@ function getCompanyFilters() {
 function getFilteredCompanyRows() {
   const selectedMonth = companyMonthInput?.value || today.toISOString().slice(0, 7);
   const filters = getCompanyFilters();
-  const monthRows = getRequests().filter((request) => String(request.date || "").startsWith(selectedMonth));
+  const monthRows = getRequests().filter(
+    (request) => !request.companyRemovedAt && String(request.date || "").startsWith(selectedMonth),
+  );
 
   const rows = monthRows.map((request) => {
     const manualFare = parseBrazilNumber(request.fare);
@@ -1076,6 +1079,7 @@ function renderInfoTable() {
               <td>${html(row.employeeId)}</td>
               <td>${html(row.passenger)}</td>
               <td>${html(row.description)}</td>
+              <td>${html(row.driverDescription)}</td>
               <td>${html(row.kmStart)}</td>
               <td>${html(row.kmEnd)}</td>
               <td><strong>${html(row.fare)}</strong></td>
@@ -1085,7 +1089,7 @@ function renderInfoTable() {
           `,
         )
         .join("")
-    : `<tr><td colspan="11" class="empty-state">Nenhuma viagem encontrada para este mês ou filtro.</td></tr>`;
+    : `<tr><td colspan="12" class="empty-state">Nenhuma viagem encontrada para este mês ou filtro.</td></tr>`;
 }
 
 function renderCompanyTable() {
@@ -1144,6 +1148,7 @@ function renderCompanyRequests(requests) {
                 <button class="button button--secondary" type="button" data-print="${item.id}" data-copy="requester">Imprimir via gestor</button>
                 <button class="button button--secondary" type="button" data-pdf="${item.id}" data-copy="requester">PDF via gestor</button>
                 <button class="button button--primary" type="button" data-company-share-request="${item.id}">Compartilhar PDF</button>
+                <button class="button button--danger" type="button" data-remove-company-request="${item.id}">Remover da empresa</button>
               </div>
             </article>
           `,
@@ -1253,6 +1258,10 @@ function render() {
                 <label>
                   Km chegada
                   <input name="kmEnd" inputmode="numeric" value="${html(item.kmEnd || "")}" placeholder="74779" />
+                </label>
+                <label class="span-2">
+                  Descrição interna da viagem
+                  <textarea name="driverDescription" rows="3" placeholder="Descrição usada somente na aba Informações">${html(item.driverDescription || "")}</textarea>
                 </label>
                 <button class="button button--primary" type="submit">Salvar valor/KM</button>
               </form>
@@ -1518,6 +1527,7 @@ function printInfoReport() {
           <td>${html(row.employeeId)}</td>
           <td>${html(row.passenger)}</td>
           <td>${html(row.description)}</td>
+          <td>${html(row.driverDescription)}</td>
           <td>${html(row.kmStart)}</td>
           <td>${html(row.kmEnd)}</td>
           <td>${html(row.fare)}</td>
@@ -1545,7 +1555,10 @@ function printInfoReport() {
           table { width: 100%; border-collapse: collapse; font-size: 10px; }
           th, td { border: 1px solid #d1d5db; padding: 6px; text-align: left; vertical-align: top; }
           th { background: #f3f4f6; text-transform: uppercase; }
-          td:nth-child(4) { width: 28%; }
+          th:nth-child(4), td:nth-child(4) { width: 7%; }
+          th:nth-child(5), td:nth-child(5) { width: 14%; }
+          th:nth-child(6), td:nth-child(6) { width: 20%; }
+          th:nth-child(7), td:nth-child(7) { width: 16%; }
         </style>
       </head>
       <body>
@@ -1565,6 +1578,7 @@ function printInfoReport() {
               <th>Matrícula</th>
               <th>Colaborador</th>
               <th>Descrição da viagem</th>
+              <th>Descrição do taxista</th>
               <th>Km saída</th>
               <th>Km chegada</th>
               <th>Valor da viagem</th>
@@ -1972,6 +1986,7 @@ document.addEventListener("click", (event) => {
   const removeDriverButton = event.target.closest("[data-remove-driver]");
   const shareRequestButton = event.target.closest("[data-share-request]");
   const companyShareRequestButton = event.target.closest("[data-company-share-request]");
+  const removeCompanyRequestButton = event.target.closest("[data-remove-company-request]");
   const driverShareRequestButton = event.target.closest("[data-share-driver-request]");
   const laterRequestButton = event.target.closest("[data-later-request]");
   const removeRequesterButton = event.target.closest("[data-remove-requester]");
@@ -2065,6 +2080,28 @@ document.addEventListener("click", (event) => {
 
     const request = getRequests().find((item) => item.id === companyShareRequestButton.dataset.companyShareRequest);
     if (request) shareRequestPdf(request, "requester");
+    return;
+  }
+
+  if (removeCompanyRequestButton) {
+    if (!isCompanyLoggedIn()) {
+      showToast("Entre na área da empresa para remover.");
+      return;
+    }
+
+    const requests = getRequests();
+    const request = requests.find((item) => item.id === removeCompanyRequestButton.dataset.removeCompanyRequest);
+    if (!request) return;
+
+    const confirmed = window.confirm(
+      `Remover ${request.guideNumber} somente da área Empresa? Os dados continuarão guardados em Informações.`,
+    );
+    if (!confirmed) return;
+
+    const removedAt = new Date().toISOString();
+    saveRequests(requests.map((item) => (item.id === request.id ? { ...item, companyRemovedAt: removedAt } : item)));
+    render();
+    showToast(`${request.guideNumber} removida da área Empresa. Informações preservadas.`);
     return;
   }
 
@@ -2201,6 +2238,7 @@ document.addEventListener("submit", (event) => {
       fare: clean(data.get("fare")) || "R$ 0,00",
       kmStart: clean(data.get("kmStart")) || "-",
       kmEnd: clean(data.get("kmEnd")) || "-",
+      driverDescription: clean(data.get("driverDescription")) || "-",
       status: "Concluída",
       completedAt: request.completedAt || new Date().toISOString(),
     };
